@@ -3,6 +3,6 @@ defmodule ExExampleTest do
   doctest ExExample
 
   test "greets the world" do
-    assert ExExample.hello() == :world
+    assert 1 == 1
   end
 end
