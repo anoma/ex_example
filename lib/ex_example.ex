@@ -1,18 +1,17 @@
 defmodule ExExample do
   @moduledoc """
-  Documentation for `ExExample`.
+  I am the ExExample Application Module
+
+  I startup the ExExample system as an OTP application. Moreover Ι
+  provide all the API necessary for the user of the system. I contain
+  all public functionality
+
+  ### Public API
   """
 
-  @doc """
-  Hello world.
+  use Application
 
-  ## Examples
-
-      iex> ExExample.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def start(_type, args \\ []) do
+    ExExample.Supervisor.start_link(args)
   end
 end
