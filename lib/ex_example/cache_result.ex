@@ -10,8 +10,9 @@ defmodule ExExample.CacheResult do
     I represent the result of a completed Example Computation
     """
 
+    field(:arguments, Macro.input() | nil, default: nil)
     field(:source, Macro.input())
-    field(:source_name, atom())
+    field(:source_name, {module(), atom(), non_neg_integer()})
     field(:result, term())
     field(:pure, boolean())
   end
