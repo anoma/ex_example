@@ -23,19 +23,36 @@ defmodule ExExample do
   defmacro __using__(_options) do
     quote do
       import unquote(ExExample.Macro)
+      # module attribute that holds all the examples
+      Module.register_attribute(__MODULE__, :examples, accumulate: true)
 
+      # import the behavior for the callbacks
       @behaviour ExExample.Behaviour
 
+      # default implementation of the callbacks
       def copy(result) do
         result
       end
 
       def rerun?(_result) do
-        true
+        false
       end
 
+      # mark the callbacks are overridable.
       defoverridable copy: 1
       defoverridable rerun?: 1
+
+      @before_compile unquote(__MODULE__)
+    end
+  end
+
+  defmacro __before_compile__(_env) do
+    quote do
+      def run_examples() do
+        Enum.each(@examples, fn example ->
+          apply(__MODULE__, example, [])
+        end)
+      end
     end
   end
 end

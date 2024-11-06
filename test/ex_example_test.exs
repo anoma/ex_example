@@ -1,8 +1,3 @@
 defmodule ExExampleTest do
-  use ExUnit.Case
-  doctest ExExample
-
-  test "greets the world" do
-    assert 1 == 1
-  end
+  use ExExample.Test, for: ExExample.Examples.ECacheResult
 end

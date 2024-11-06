@@ -26,6 +26,8 @@ defmodule ExExample.Macro do
         unquote(body)
       end
 
+      # register the cached function as an example
+      @examples unquote(no_cache_func_name)
       # i define the example logic but check if there is a result in cache
       # before executing
       def unquote(name) do
