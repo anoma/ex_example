@@ -163,41 +163,6 @@ defmodule ExExample do
         |> ExExample.print_result()
 
         nil
-        # deps
-        # |> Graph.topsort()
-        # |> Enum.reduce_while({false, %{}}, fn {mod, func} = example, {failed, acc} ->
-        #   if failed do
-        #     IO.puts("(skipped) #{func}")
-        #     {:cont, {true, nil}}
-        #   else
-        #     deps = Graph.in_edges(deps, example)
-
-        #     inputs =
-        #       deps
-        #       |> Enum.reduce([], fn edge, inputs ->
-        #         %{v1: input_example} = edge
-        #         [Map.get(acc, input_example) | inputs]
-        #       end)
-
-        # try do
-        #   result = apply(mod, func, inputs)
-        #   IO.puts("✅ #{func}")
-        #   {:cont, {false, Map.put(acc, example, result)}}
-        # rescue
-        #   e ->
-        #     IO.puts("❌ #{func}")
-        #     {:cont, {true, nil}}
-        #     # {:halt, "example #{inspect(func)} failed"}
-        # end
-        #   end
-        # end)
-        # |> case do
-        #   {true, _} ->
-        #     IO.puts("Some examples failed")
-
-        #   _ ->
-        #     IO.puts("All examples succeeded")
-        # end
       end
 
       def run_examples() do

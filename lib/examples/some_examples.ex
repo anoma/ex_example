@@ -47,4 +47,10 @@ defmodule ExExample.Examples.SomeExamples do
     false = Stack.empty?(stack)
     stack
   end
+
+  @depends [:pop, :push]
+  defexample compare_stacks(stack1, stack2) do
+    assert stack1.elements != stack2.elements
+    nil
+  end
 end
