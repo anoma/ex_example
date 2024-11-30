@@ -48,42 +48,156 @@ defmodule ExExample do
     end
   end
 
+  @doc """
+  I create a graph of examples and topologically sort them.
+  """
+  def dependency_graph(examples) do
+    examples
+    |> Enum.reduce(Graph.new(), fn example, g ->
+      {mod, func, deps} = example
+
+      if deps == nil do
+        Graph.add_vertex(g, {mod, func})
+      else
+        Enum.reduce(deps, g, &Graph.add_edge(&2, {mod, &1}, {mod, func}))
+      end
+    end)
+  end
+
+  @doc """
+  I run the given list of examples.
+
+  An example is in the form of {module, function, dependencies}
+  """
+  def run_examples(examples, dependencies) do
+    examples
+    |> Enum.reduce_while(%{}, fn example, eval_results ->
+      # list all dependencies for this example
+      example_deps =
+        Graph.in_edges(dependencies, example)
+        |> Enum.map(&Map.get(&1, :v1))
+
+      # get the input values from the runs of the examples this one depends on
+      inputs = Enum.map(example_deps, &{&1, Map.get(eval_results, &1)})
+
+      failed_inputs = Enum.filter(inputs, &Map.get(elem(&1, 1), :failed?, false))
+      skipped_inputs = Enum.filter(inputs, &Map.get(elem(&1, 1), :skipped?, false))
+
+      # if any of its dependencies failed, this example will be skipped.
+      if not Enum.empty?(failed_inputs) or not Enum.empty?(skipped_inputs) do
+        {:cont,
+         Map.put(eval_results, example, %{
+           skipped?: true,
+           skipped_inputs: skipped_inputs,
+           failed_inputs: failed_inputs
+         })}
+      else
+        inputs = Enum.map(inputs, &Map.get(elem(&1, 1), :result))
+
+        case run_example(example, inputs) do
+          {:ok, result} ->
+            {:cont, Map.put(eval_results, example, %{result: result, failed?: false})}
+
+          {:error, e} ->
+            {:cont, Map.put(eval_results, example, %{error: e, failed?: true})}
+        end
+      end
+    end)
+  end
+
+  def run_example({module, function}, inputs) do
+    try do
+      result = apply(module, function, inputs)
+      {:ok, result}
+    rescue
+      e ->
+        {:error, e}
+    end
+  end
+
+  def print_result(result) do
+    for {{_, func}, output} <- result do
+      case output do
+        %{failed?: true} ->
+          IO.puts("""
+          🔴 #{inspect(func)}
+             error: #{inspect(Map.get(output, :error, nil))}
+          """)
+
+        %{skipped?: true} ->
+          skipped_inputs =
+            Enum.map(Map.get(output, :skipped_inputs, []), &(&1 |> elem(0) |> elem(1)))
+
+          failed_inputs =
+            Enum.map(Map.get(output, :failed_inputs, []), &(&1 |> elem(0) |> elem(1)))
+
+          IO.puts("⚪️ #{inspect(func)}")
+
+          if skipped_inputs != [] do
+            IO.puts("   skipped inputs: #{inspect(skipped_inputs)}")
+          end
+
+          if failed_inputs != [] do
+            IO.puts("   failed inputs: #{inspect(failed_inputs)}")
+          end
+
+        %{failed?: false, result: r} ->
+          IO.puts("🟢 #{inspect(func)}\n   result: #{inspect(r)}\n")
+      end
+    end
+  end
+
   defmacro __before_compile__(_env) do
     quote do
       def debug() do
-        deps =
-          @test
-          |> Enum.reduce(Graph.new(), fn dep, g ->
-            {mod, example, deps} = dep
+        # Create a graph of dependencies between the examples
+        dependencies = ExExample.dependency_graph(@test)
 
-            if deps == nil do
-              Graph.add_vertex(g, {mod, example})
-            else
-              deps
-              |> Enum.reduce(g, &Graph.add_edge(&2, {mod, &1}, {mod, example}))
-            end
-          end)
+        # Create a list for the order of evaluation of the examples
+        eval_order = Graph.topsort(dependencies)
 
-        deps
-        |> Graph.topsort()
-        |> Enum.reduce_while(%{}, fn {mod, func} = example, acc ->
-          deps = Graph.in_edges(deps, example)
+        # Evaluate the list
+        result = ExExample.run_examples(eval_order, dependencies)
 
-          inputs =
-            deps
-            |> Enum.reduce([], fn edge, inputs ->
-              %{v1: input_example} = edge
-              [Map.get(acc, input_example) | inputs]
-            end)
+        result
+        |> ExExample.print_result()
 
-          try do
-            result = apply(mod, func, inputs)
-            {:cont, Map.put(acc, example, result)}
-          rescue
-            e ->
-              {:halt, "example #{inspect(func)} failed"}
-          end
-        end)
+        nil
+        # deps
+        # |> Graph.topsort()
+        # |> Enum.reduce_while({false, %{}}, fn {mod, func} = example, {failed, acc} ->
+        #   if failed do
+        #     IO.puts("(skipped) #{func}")
+        #     {:cont, {true, nil}}
+        #   else
+        #     deps = Graph.in_edges(deps, example)
+
+        #     inputs =
+        #       deps
+        #       |> Enum.reduce([], fn edge, inputs ->
+        #         %{v1: input_example} = edge
+        #         [Map.get(acc, input_example) | inputs]
+        #       end)
+
+        # try do
+        #   result = apply(mod, func, inputs)
+        #   IO.puts("✅ #{func}")
+        #   {:cont, {false, Map.put(acc, example, result)}}
+        # rescue
+        #   e ->
+        #     IO.puts("❌ #{func}")
+        #     {:cont, {true, nil}}
+        #     # {:halt, "example #{inspect(func)} failed"}
+        # end
+        #   end
+        # end)
+        # |> case do
+        #   {true, _} ->
+        #     IO.puts("Some examples failed")
+
+        #   _ ->
+        #     IO.puts("All examples succeeded")
+        # end
       end
 
       def run_examples() do

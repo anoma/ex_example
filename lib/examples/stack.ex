@@ -9,6 +9,10 @@ defmodule Stack do
     {:ok, %Stack{}}
   end
 
+  @spec empty?(Stack.t()) :: boolean
+  def empty?(%Stack{elements: []}), do: true
+  def empty?(%Stack{elements: _}), do: false
+
   @spec push(Stack.t(), any()) :: {:ok, Stack.t()}
   def push(%Stack{elements: xs}, x) do
     {:ok, %Stack{elements: [x | xs]}}

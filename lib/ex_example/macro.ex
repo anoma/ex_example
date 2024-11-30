@@ -23,7 +23,6 @@ defmodule ExExample.Macro do
     quote do
       # i am the uncached version of the example
       def unquote(no_cache_name) do
-        IO.inspect @depends
         unquote(body)
       end
 
