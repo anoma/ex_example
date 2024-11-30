@@ -1,0 +1,9 @@
+strict digraph {
+    246563908[label="{ExExample.Examples.SomeExamples, :push}"]
+    251105872[label="{ExExample.Examples.SomeExamples, :pop}"]
+    1639747072[label="{ExExample.Examples.SomeExamples, :peek}"]
+    2828898930[label="{ExExample.Examples.SomeExamples, :create_stack}"]
+    246563908 -> 2828898930 [weight=1]
+    251105872 -> 246563908 [weight=1]
+    1639747072 -> 246563908 [weight=1]
+}

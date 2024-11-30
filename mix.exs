@@ -29,7 +29,8 @@ defmodule ExExample.MixProject do
       # non-runtime dependencies below
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.31", only: [:dev], runtime: false}
+      {:ex_doc, "~> 0.31", only: [:dev], runtime: false},
+      {:libgraph, "~> 0.16.0"}
     ]
   end
 end

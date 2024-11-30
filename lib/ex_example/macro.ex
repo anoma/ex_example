@@ -23,11 +23,13 @@ defmodule ExExample.Macro do
     quote do
       # i am the uncached version of the example
       def unquote(no_cache_name) do
+        IO.inspect @depends
         unquote(body)
       end
 
       # register the cached function as an example
       @examples unquote(no_cache_func_name)
+      @test {unquote(caller_module), unquote(func_name), @depends}
       # i define the example logic but check if there is a result in cache
       # before executing
       def unquote(name) do

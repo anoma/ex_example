@@ -25,6 +25,8 @@ defmodule ExExample do
       import unquote(ExExample.Macro)
       # module attribute that holds all the examples
       Module.register_attribute(__MODULE__, :examples, accumulate: true)
+      Module.register_attribute(__MODULE__, :depends, accumulate: false)
+      Module.register_attribute(__MODULE__, :test, accumulate: true)
 
       # import the behavior for the callbacks
       @behaviour ExExample.Behaviour
@@ -48,8 +50,45 @@ defmodule ExExample do
 
   defmacro __before_compile__(_env) do
     quote do
+      def debug() do
+        deps =
+          @test
+          |> Enum.reduce(Graph.new(), fn dep, g ->
+            {mod, example, deps} = dep
+
+            if deps == nil do
+              Graph.add_vertex(g, {mod, example})
+            else
+              deps
+              |> Enum.reduce(g, &Graph.add_edge(&2, {mod, &1}, {mod, example}))
+            end
+          end)
+
+        deps
+        |> Graph.topsort()
+        |> Enum.reduce_while(%{}, fn {mod, func} = example, acc ->
+          deps = Graph.in_edges(deps, example)
+
+          inputs =
+            deps
+            |> Enum.reduce([], fn edge, inputs ->
+              %{v1: input_example} = edge
+              [Map.get(acc, input_example) | inputs]
+            end)
+
+          try do
+            result = apply(mod, func, inputs)
+            {:cont, Map.put(acc, example, result)}
+          rescue
+            e ->
+              {:halt, "example #{inspect(func)} failed"}
+          end
+        end)
+      end
+
       def run_examples() do
-        Enum.each(@examples, fn example ->
+        Enum.each(@examples, fn {example, deps} ->
+          IO.inspect(deps, label: "deps")
           apply(__MODULE__, example, [])
         end)
       end
