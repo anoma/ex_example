@@ -7,15 +7,20 @@ defmodule ExExample.MixProject do
       version: "0.1.0",
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      dialyzer: [
+        plt_add_deps: :apps_direct,
+        plt_add_apps: [:wx, :ex_unit],
+        plt_ignore_apps: [:mnesia]
+      ]
     ]
   end
 
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {ExExample, []},
-      extra_applications: [:logger, :observer, :wx]
+      extra_applications: [:logger, :observer, :wx],
+      mod: {ExExample.Application, []}
     ]
   end
 
@@ -29,7 +34,8 @@ defmodule ExExample.MixProject do
       # non-runtime dependencies below
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.31", only: [:dev], runtime: false}
+      {:ex_doc, "~> 0.31", only: [:dev], runtime: false},
+      {:libgraph, "~> 0.16.0"}
     ]
   end
 end

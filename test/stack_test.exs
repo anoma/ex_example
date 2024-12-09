@@ -1,8 +1,8 @@
-defmodule ExExampleTest do
+defmodule StackTest do
   use ExUnit.Case
   doctest ExExample
 
   test "greets the world" do
-    assert 1 == 1
+    Examples.Stack.__run_examples__()
   end
 end
