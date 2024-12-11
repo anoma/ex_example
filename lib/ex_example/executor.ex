@@ -43,8 +43,8 @@ defmodule ExExample.Executor do
   If any of the example its dependencies either failed or were skipped,
   I will skip the example.
   """
-  @spec maybe_run_example(atom(), atom(), list(dependency)) :: any()
-  def maybe_run_example(module, func, dependencies) do
+  @spec maybe_run_example(atom(), atom(), list(dependency), Keyword.t()) :: any()
+  def maybe_run_example(module, func, dependencies, copy: copy) do
     dependency_results =
       dependencies
       |> Enum.map(fn {{module, func}, _arity} ->
@@ -64,7 +64,7 @@ defmodule ExExample.Executor do
           # cached result, no recompile
           {:ok, result} ->
             Logger.debug("found cached result for #{inspect(module)}.#{func}")
-            result.result
+            copy_result(result, copy).result
 
           {:error, :no_result} ->
             Logger.debug("running #{inspect(module)}.#{func} for the first time")
@@ -109,5 +109,14 @@ defmodule ExExample.Executor do
     Cache.put_result(result, key)
 
     result
+  end
+
+  # @doc """
+  # Given a result from a previous invocation and a copy function, I create a copy of the result.
+  # """
+  defp copy_result(%Cache.Result{} = result,  {_, nil}), do: result
+
+  defp copy_result(%Cache.Result{} = result, {module, func}) do
+    %{result | result: apply(module, func, [result.result])}
   end
 end

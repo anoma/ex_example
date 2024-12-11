@@ -12,6 +12,8 @@ defmodule ExExample do
       # module attribute that holds all the examples
       Module.register_attribute(__MODULE__, :example_dependencies, accumulate: true)
       Module.register_attribute(__MODULE__, :examples, accumulate: true)
+      Module.register_attribute(__MODULE__, :copies, accumulate: true)
+      Module.register_attribute(__MODULE__, :copy, accumulate: false)
 
       @before_compile unquote(__MODULE__)
     end
@@ -69,6 +71,11 @@ defmodule ExExample do
         end)
         |> Graph.topsort()
       end
+
+      def __example_copy__(example_name) do
+        @copies
+        |> Keyword.get(example_name, nil)
+      end
     end
   end
 
@@ -84,16 +91,24 @@ defmodule ExExample do
     hidden_example_name = String.to_atom("__#{example_name}__")
 
     quote do
+      # fetch the attribute value, and then clear it for the next examples.
+      example_copy_tag = Module.get_attribute(unquote(__CALLER__.module), :copy)
+      Module.delete_attribute(unquote(__CALLER__.module), :copy)
+
       def unquote({hidden_example_name, context, args}) do
         unquote(body)
       end
 
+      @copies {unquote(example_name), {unquote(__CALLER__.module), example_copy_tag}}
       @example_dependencies {unquote(example_name), unquote(called_functions)}
       @examples unquote(example_name)
       def unquote(name) do
         example_dependencies = __example_dependencies__(unquote(example_name))
+        example_copy = __example_copy__(unquote(example_name))
 
-        Executor.maybe_run_example(__MODULE__, unquote(example_name), example_dependencies)
+        Executor.maybe_run_example(__MODULE__, unquote(example_name), example_dependencies,
+          copy: example_copy
+        )
       end
     end
   end
