@@ -6,6 +6,7 @@ defmodule Examples.Stack do
 
   import ExUnit.Assertions
 
+  @copy :do_copy
   example new_stack do
     {:ok, stack} = Stack.create()
     assert stack == %Stack{}
@@ -28,5 +29,9 @@ defmodule Examples.Stack do
     stack = push_stack()
     {:ok, stack, 1} = Stack.pop(stack)
     stack
+  end
+
+  def do_copy(stack) do
+    %Stack{elements: stack.elements}
   end
 end
