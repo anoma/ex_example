@@ -11,9 +11,9 @@ defmodule Stack do
     field(:elements, [any()], default: [])
   end
 
-  @spec create() :: {:ok, t()}
-  def create do
-    {:ok, %Stack{}}
+  @spec create([any()]) :: {:ok, t()}
+  def create(xs \\ []) do
+    {:ok, %Stack{elements: xs}}
   end
 
   # yesyesyes
