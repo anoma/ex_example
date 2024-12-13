@@ -11,6 +11,15 @@ defmodule ExExample.Cache do
   @cache_name __MODULE__
 
   @doc """
+  I clear the entire cache.
+  """
+  @spec clear() :: :ok
+  def clear do
+    Cachex.clear!(@cache_name)
+    :ok
+  end
+
+  @doc """
   I store a result in cache for a given key.
   """
   @spec put_result(Result.t(), Key.t()) :: {atom(), boolean()}
@@ -22,7 +31,7 @@ defmodule ExExample.Cache do
   I fetch a previous Result from the cache if it exists.
   If it does not exist, I return `{:error, :not_found}`.
   """
-  @spec get_result(Key.t()) :: {:ok, any()} | {:error, :no_result}
+  @spec get_result(Key.t()) :: {:ok, Result.t()} | {:error, :no_result}
   def get_result(%Key{} = key) do
     case Cachex.get(@cache_name, key) do
       {:ok, nil} ->

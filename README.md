@@ -46,12 +46,12 @@ if the code it depends on, or the example itself, have not been changed.
 
 When the code changes, the example is executed again.
 
-## Tests 
+## Tests
 
-The examples are created to work with the code base, but they can also serve as a unit test. 
+The examples are created to work with the code base, but they can also serve as a unit test.
 
 To let ExUnit use the examples in your codebase as tests, add a test file in the `test/` folder, and
-import the `ExExample.Test` module. 
+import the `ExExample.Test` module.
 
 To run the examples from above, add a file `ny_examples_test.exs` to your `test/` folder and include the following.
 

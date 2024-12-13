@@ -15,5 +15,6 @@ defmodule ExExample.Cache.Result do
     field(:key, Key.t())
     field(:success, :failed | :success | :skipped)
     field(:result, term())
+    field(:cached, boolean(), default: true)
   end
 end

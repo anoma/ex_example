@@ -13,29 +13,21 @@ defmodule ExExample.Analyze do
     """
     defstruct called_functions: [], env: nil, functions: []
 
+    @spec put_call(map(), {atom(), atom()}, non_neg_integer()) :: map()
     def put_call(state, mod, arg) do
       %{state | called_functions: [{mod, arg} | state.called_functions]}
     end
 
+    @spec put_def(map(), atom(), non_neg_integer()) :: map()
     def put_def(state, func, arity) do
       %{state | functions: [{func, arity} | state.functions]}
     end
   end
 
   # ----------------------------------------------------------------------------
-  # Compute hash of all modules that the example depends on
-
-  def compile_dependency_hash(dependencies) do
-    dependencies
-    |> Enum.map(fn {{module, _func}, _arity} ->
-      module.__info__(:attributes)[:vsn]
-    end)
-    |> :erlang.phash2()
-  end
-
-  # ----------------------------------------------------------------------------
   # Exctract function calls from ast
 
+  @spec extract_function_calls(tuple(), Macro.Env.t()) :: [{{atom(), atom()}, non_neg_integer()}]
   def extract_function_calls(ast, env) do
     state = %State{env: env}
     # IO.inspect(env)
@@ -52,6 +44,7 @@ defmodule ExExample.Analyze do
 
   # qualified function call
   # e.g., Foo.bar()
+
   defp extract_function_call(
          {{:., _, [{:__aliases__, _, aliases}, func_name]}, _, args} = ast,
          state
@@ -68,6 +61,10 @@ defmodule ExExample.Analyze do
         state = State.put_call(state, {resolved, func_name}, arg_count)
         {ast, state}
     end
+  end
+
+  defp extract_function_call({{:., _, _args}, _, _} = ast, state) do
+    {ast, state}
   end
 
   # variable in binding
