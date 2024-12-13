@@ -114,7 +114,7 @@ defmodule ExExample.Executor do
   # @doc """
   # Given a result from a previous invocation and a copy function, I create a copy of the result.
   # """
-  defp copy_result(%Cache.Result{} = result,  {_, nil}), do: result
+  defp copy_result(%Cache.Result{} = result, {_, nil}), do: result
 
   defp copy_result(%Cache.Result{} = result, {module, func}) do
     %{result | result: apply(module, func, [result.result])}
