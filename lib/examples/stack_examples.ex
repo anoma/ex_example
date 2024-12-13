@@ -15,7 +15,6 @@ defmodule Examples.Stack do
 
   example empty_stack_should_be_empty do
     stack = new_stack()
-
     assert Stack.empty?(stack)
   end
 
