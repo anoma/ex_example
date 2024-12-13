@@ -1,4 +1,5 @@
 defmodule Examples.Stack do
+  # all exmaples must return a Stack
   @moduledoc """
   I contain examples that test the `Stack` implementation.
   """
@@ -6,21 +7,22 @@ defmodule Examples.Stack do
 
   import ExUnit.Assertions
 
-  @copy :do_copy
   example new_stack do
-    {:ok, stack} = Stack.create()
-    assert stack == %Stack{}
+    {:ok, stack} = Stack.create([])
+    assert stack == %Stack{elements: []}
     stack
   end
 
   example empty_stack_should_be_empty do
     stack = new_stack()
     assert Stack.empty?(stack)
+    stack
   end
 
   example push_stack do
     stack = new_stack()
     {:ok, stack} = Stack.push(stack, 1)
+    assert stack == %Stack{elements: [1]}
     stack
   end
 
@@ -30,7 +32,11 @@ defmodule Examples.Stack do
     stack
   end
 
-  def do_copy(stack) do
+  @spec copy(any()) :: Stack.t()
+  def copy(stack) do
     %Stack{elements: stack.elements}
   end
+
+  @spec rerun?(any()) :: boolean()
+  def rerun?(_), do: false
 end
