@@ -45,7 +45,8 @@ defmodule ExExample.Cache do
   @doc """
   I return the state of the last execution of an example.
   """
-  @spec state(Key.t() | {atom(), atom()}) :: :succeeded | :failed | :skipped
+  @spec state(Key.t() | {atom(), atom()}) ::
+          :succeeded | :failed | :skipped
   def state({module, function}) do
     state(%Key{module: module, function: function})
   end

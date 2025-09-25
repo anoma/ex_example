@@ -27,17 +27,21 @@ defmodule ExExample.Analyze do
   # ----------------------------------------------------------------------------
   # Exctract function calls from ast
 
-  @spec extract_function_calls(tuple(), Macro.Env.t()) :: [{{atom(), atom()}, non_neg_integer()}]
+  @spec extract_function_calls(tuple(), Macro.Env.t()) :: [
+          {{atom(), atom()}, non_neg_integer()}
+        ]
   def extract_function_calls(ast, env) do
     state = %State{env: env}
-    # IO.inspect(env)
-    {_, state} = Macro.prewalk(ast, state, &extract_function_calls_logged/2)
+    Logger.debug("extracting function calls with env: #{inspect(env)}")
+
+    {_, state} =
+      Macro.prewalk(ast, state, &extract_function_calls_logged/2)
+
     state.called_functions
   end
 
   defp extract_function_calls_logged(ast, state) do
-    # IO.puts("------------------------------------------- ")
-    # IO.inspect(ast)
+    Logger.debug("extracting function calls from ast: #{inspect(ast)}")
 
     extract_function_call(ast, state)
   end
@@ -46,7 +50,8 @@ defmodule ExExample.Analyze do
   # e.g., Foo.bar()
 
   defp extract_function_call(
-         {{:., _, [{:__aliases__, _, aliases}, func_name]}, _, args} = ast,
+         {{:., _, [{:__aliases__, _, aliases}, func_name]}, _, args} =
+           ast,
          state
        ) do
     case Macro.Env.expand_alias(state.env, [], aliases) do
@@ -69,7 +74,8 @@ defmodule ExExample.Analyze do
 
   # variable in binding
   # e.g. `x` in `x = 1`
-  defp extract_function_call({_func, _, nil} = ast, state) do
+  defp extract_function_call({_func, _, atom} = ast, state)
+       when is_atom(atom) do
     {ast, state}
   end
 
@@ -88,7 +94,8 @@ defmodule ExExample.Analyze do
 
         # local def
         [] ->
-          if {func, arg_count} in @special_forms or func in [:__block__, :&, :__aliases__] do
+          if {func, arg_count} in @special_forms or
+               func in [:__block__, :&, :__aliases__] do
             state
           else
             State.put_call(state, {state.env.module, func}, arg_count)
@@ -108,7 +115,9 @@ defmodule ExExample.Analyze do
   @doc """
   Given the path of a source file, I extract the definitions of the functions.
   """
-  @spec extract_defs(String.t(), Macro.Env.t()) :: [{atom(), non_neg_integer()}]
+  @spec extract_defs(String.t(), Macro.Env.t()) :: [
+          {atom(), non_neg_integer()}
+        ]
   def extract_defs(file, env) do
     source = File.read!(file)
     {:ok, ast} = Code.string_to_quoted(source)
@@ -126,8 +135,7 @@ defmodule ExExample.Analyze do
   end
 
   defp extract_def_logged(ast, state) do
-    # IO.puts("------------------------------------------- ")
-    # IO.inspect(ast)
+    Logger.debug("extracting defs from ast: #{inspect(ast)}")
 
     extract_def(ast, state)
   end
