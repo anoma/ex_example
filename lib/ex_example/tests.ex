@@ -1,4 +1,4 @@
-defmodule ExExample.Tests do
+defmodule ExExample.ExUnit do
   @moduledoc """
   I generate a test for the given module that runs all of its examples.
   """
@@ -8,10 +8,18 @@ defmodule ExExample.Tests do
     module_to_test = Macro.expand(module, __CALLER__)
     examples = ExExample.execution_order(module_to_test)
 
+    # todo: make this actually work somehow
+    quote do
+      use ExUnit.Case
+    end
+
     for {mod, func} <- examples do
       quote do
         test "#{inspect(unquote(mod))}.#{Atom.to_string(unquote(func))}" do
-          case ExExample.Executor.attempt_example({unquote(mod), unquote(func)}, []) do
+          case ExExample.Executor.attempt_example(
+                 {unquote(mod), unquote(func)},
+                 []
+               ) do
             %{result: %Cache.Result{success: :failed} = result} ->
               raise result.result
 

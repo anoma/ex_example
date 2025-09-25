@@ -41,7 +41,8 @@ defmodule ExExample do
   """
   @spec example?(dependency()) :: boolean()
   def example?({{module, func}, _arity}) do
-    example_module?(module) and Keyword.has_key?(module.__examples__(), func)
+    example_module?(module) and
+      Keyword.has_key?(module.__examples__(), func)
   end
 
   @doc """
@@ -102,6 +103,7 @@ defmodule ExExample do
 
   defmacro __using__(_options) do
     quote do
+      # todo: does this line do anything?
       import unquote(__MODULE__)
 
       @behaviour ExExample.Behaviour
@@ -110,6 +112,12 @@ defmodule ExExample do
       Module.register_attribute(__MODULE__, :examples, accumulate: true)
 
       @before_compile unquote(__MODULE__)
+
+      def copy(item), do: item
+      def rerun?(_), do: false
+
+      defoverridable copy: 1
+      defoverridable rerun?: 1
     end
   end
 
@@ -120,7 +128,7 @@ defmodule ExExample do
     end
   end
 
-  defmacro example({example_name, context, args} = name, do: body) do
+  defmacro example({example_name, context, args}, do: body) do
     called_functions = Analyze.extract_function_calls(body, __CALLER__)
 
     # example_name is the name of the function that is being tested
@@ -136,9 +144,14 @@ defmodule ExExample do
         unquote(body)
       end
 
+      # TODO: examples with arguments!
+      # arg \\ default has its own AST node, so this isn't automatic.
       @examples {unquote(example_name), unquote(called_functions)}
-      def unquote(name) do
-        case Executor.attempt_example({__MODULE__, unquote(example_name)}, []) do
+      def unquote({example_name, context, args}) do
+        case Executor.attempt_example(
+               {__MODULE__, unquote(example_name)},
+               []
+             ) do
           %{result: %Cache.Result{success: :success} = result} ->
             result.result
 

@@ -9,12 +9,13 @@ system such as Elixir applications.
 
 ## Installation
 
-There is no package available on hex yet, so add it as a Git dependency:
+Add `ex_example` as a dependency in your `mix.exs` file.
+(Don't limit it to `:dev` or `:test` environments.)
 
 ```elixir
 def deps do
   [
-    {:ex_example, git: "https://github.com/anoma/ex_example"}
+    {:ex_example, "~> 0.1.0"}
   ]
 end
 ```
@@ -27,7 +28,7 @@ To get started, create a new module in the `lib/` folder of your Elixir applicat
 defmodule MyExamples do
   use ExExample
 
-  defexample read_data() do
+  example read_data do
     1..1000 |> Enum.shuffle() |> Enum.take(10)
   end
 
@@ -77,6 +78,6 @@ To run the examples from above, add a file `ny_examples_test.exs` to your `test/
 ```elixir
 defmodule MyExamplesTest do
   use ExUnit.Case
-  use ExExample.Tests, for: MyExamples
+  use ExExample.ExUnit, for: MyExamples
 end
 ```
