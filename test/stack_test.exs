@@ -1,5 +1,4 @@
 defmodule StackTest do
-  use ExUnit.Case
+  use ExExample.ExUnit, for: Examples.Stack
   doctest ExExample
-  use ExExample.Tests, for: Examples.Stack
 end

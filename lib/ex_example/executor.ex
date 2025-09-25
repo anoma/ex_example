@@ -6,6 +6,10 @@ defmodule ExExample.Executor do
   or if an example should be skipped.
   """
 
+  @status_green IO.ANSI.format([:green, "good"])
+  @status_grey IO.ANSI.format([:light_black, "skip"])
+  @status_red IO.ANSI.format([:red, "/!!\\"])
+
   require Logger
 
   alias ExExample.Cache
@@ -21,8 +25,10 @@ defmodule ExExample.Executor do
       if run.success != [] do
         run.success
         |> Enum.map_join(
-          ", ",
-          fn {{mod, func}, _arity} -> "   🟢 #{inspect(mod)}.#{Atom.to_string(func)}" end
+          "\n",
+          fn {{mod, func}, _arity} ->
+            "+   #{@status_green} #{inspect(mod)}.#{Atom.to_string(func)}"
+          end
         )
       else
         ""
@@ -32,9 +38,9 @@ defmodule ExExample.Executor do
       if run.failed != [] do
         run.success
         |> Enum.map_join(
-          ", ",
+          "\n",
           fn {{mod, func}, _arity} ->
-            "    🔴 #{inspect(mod)}.#{Atom.to_string(func)}"
+            "+   #{@status_red} #{inspect(mod)}.#{Atom.to_string(func)}"
           end
         )
         |> Kernel.<>(output)
@@ -46,9 +52,9 @@ defmodule ExExample.Executor do
       if run.no_cache != [] do
         run.success
         |> Enum.map_join(
-          ", ",
+          "\n",
           fn {{mod, func}, _arity} ->
-            "    ⚪️ #{inspect(mod)}.#{Atom.to_string(func)}"
+            "+   #{@status_grey} #{inspect(mod)}.#{Atom.to_string(func)}"
           end
         )
         |> Kernel.<>(output)
@@ -60,9 +66,9 @@ defmodule ExExample.Executor do
       if run.skipped != [] do
         run.success
         |> Enum.map_join(
-          ", ",
+          "\n",
           fn {{mod, func}, _arity} ->
-            "    ⚪️ #{inspect(mod)}.#{Atom.to_string(func)}"
+            "+   #{@status_grey} #{inspect(mod)}.#{Atom.to_string(func)}"
           end
         )
         |> Kernel.<>(output)
@@ -78,7 +84,7 @@ defmodule ExExample.Executor do
     cached = if result.cached, do: "(cached) ", else: ""
 
     IO.puts("""
-    🟢 #{cached}#{inspect(run.key.module)}.#{Atom.to_string(run.key.function)}\
+    #{@status_green} #{cached}#{inspect(run.key.module)}.#{Atom.to_string(run.key.function)}\
        #{print_dependencies(run)}\
     """)
 
@@ -89,7 +95,7 @@ defmodule ExExample.Executor do
     cached = if result.cached, do: "(cached) ", else: ""
 
     IO.puts("""
-    ⚪️  #{cached}#{inspect(run.key.module)}.#{Atom.to_string(run.key.function)}\
+    #{@status_grey}  #{cached}#{inspect(run.key.module)}.#{Atom.to_string(run.key.function)}\
        #{print_dependencies(run)}\
     """)
 
@@ -100,7 +106,7 @@ defmodule ExExample.Executor do
     cached = if result.cached, do: "(cached) ", else: ""
 
     IO.puts("""
-    🔴  #{cached}#{inspect(run.key.module)}.#{Atom.to_string(run.key.function)}\
+    #{@status_red}  #{cached}#{inspect(run.key.module)}.#{Atom.to_string(run.key.function)}\
        #{print_dependencies(run)}\
     """)
 
@@ -121,11 +127,17 @@ defmodule ExExample.Executor do
   I return the last known result of an example invocation.
   If the example has not been run yet I return an error.
   """
-  @spec last_result(ExExample.dependency()) :: :success | :skipped | :failed | :no_cache
+  @spec last_result(ExExample.dependency()) ::
+          :success | :skipped | :failed | :no_cache
   def last_result({{module, func}, _arity}) do
     deps_hash = dependency_hash({module, func})
 
-    key = %Cache.Key{module: module, function: func, arguments: [], deps_hash: deps_hash}
+    key = %Cache.Key{
+      module: module,
+      function: func,
+      arguments: [],
+      deps_hash: deps_hash
+    }
 
     case Cache.get_result(key) do
       {:ok, result} ->
@@ -152,7 +164,10 @@ defmodule ExExample.Executor do
       |> ExExample.example_dependencies()
       |> Enum.group_by(&last_result/1)
 
-    Map.merge(%{success: [], skipped: [], failed: [], no_cache: []}, results)
+    Map.merge(
+      %{success: [], skipped: [], failed: [], no_cache: []},
+      results
+    )
   end
 
   @doc """
@@ -191,17 +206,40 @@ defmodule ExExample.Executor do
   @spec attempt_example({atom(), atom()}, [any()]) :: Run.t()
   def attempt_example({module, func}, arguments) do
     deps_hash = dependency_hash({module, func})
-    key = %Cache.Key{module: module, function: func, arguments: arguments, deps_hash: deps_hash}
+
+    key = %Cache.Key{
+      module: module,
+      function: func,
+      arguments: arguments,
+      deps_hash: deps_hash
+    }
 
     case dependency_results({module, func}) do
       # no failures, only no cache or success
       %{failed: [], skipped: [], no_cache: no_cache, success: success} ->
         result = run_example_with_cache({module, func}, arguments)
-        %Run{key: key, result: result, no_cache: no_cache, success: success}
+
+        %Run{
+          key: key,
+          result: result,
+          no_cache: no_cache,
+          success: success
+        }
 
       # failures and/or skipped
-      %{failed: failed, skipped: skipped, no_cache: no_cache, success: success} ->
-        result = %Cache.Result{key: key, success: :skipped, result: nil, cached: false}
+      %{
+        failed: failed,
+        skipped: skipped,
+        no_cache: no_cache,
+        success: success
+      } ->
+        result = %Cache.Result{
+          key: key,
+          success: :skipped,
+          result: nil,
+          cached: false
+        }
+
         Cache.put_result(result, key)
 
         %Run{
@@ -220,10 +258,17 @@ defmodule ExExample.Executor do
   If there is cached result, I return that.
   If there is no result in the cache I run the example.
   """
-  @spec run_example_with_cache({atom(), atom()}, [any()]) :: Cache.Result.t()
+  @spec run_example_with_cache({atom(), atom()}, [any()]) ::
+          Cache.Result.t()
   def run_example_with_cache({module, func}, arguments) do
     deps_hash = dependency_hash({module, func})
-    key = %Cache.Key{module: module, function: func, arguments: arguments, deps_hash: deps_hash}
+
+    key = %Cache.Key{
+      module: module,
+      function: func,
+      arguments: arguments,
+      deps_hash: deps_hash
+    }
 
     case Cache.get_result(key) do
       {:ok, result} ->
@@ -245,7 +290,13 @@ defmodule ExExample.Executor do
   @spec run_example({atom(), atom()}, [any()]) :: Cache.Result.t()
   def run_example({module, func}, arguments) do
     deps_hash = dependency_hash({module, func})
-    key = %Cache.Key{module: module, function: func, arguments: arguments, deps_hash: deps_hash}
+
+    key = %Cache.Key{
+      module: module,
+      function: func,
+      arguments: arguments,
+      deps_hash: deps_hash
+    }
 
     result =
       try do
