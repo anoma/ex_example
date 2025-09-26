@@ -30,7 +30,7 @@ defmodule ExExample do
   """
   @spec hidden_name({atom(), atom()}) :: {atom(), atom()}
   def hidden_name({module, func}) do
-    {module, String.to_atom("__#{func}__")}
+    {module, String.to_atom("__ex_example__#{func}__")}
   end
 
   @doc """
@@ -135,8 +135,8 @@ defmodule ExExample do
 
     # hidden_func_name is the name of the hidden function that is being tested
     # this will contain the actual body of the example
-    # __example_name__
-    hidden_example_name = String.to_atom("__#{example_name}__")
+    # __ex_example__example_name__
+    hidden_example_name = String.to_atom("__ex_example__#{example_name}__")
 
     quote do
       def unquote({hidden_example_name, context, args}) do
