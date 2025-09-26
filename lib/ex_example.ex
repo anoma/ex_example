@@ -103,8 +103,7 @@ defmodule ExExample do
 
   defmacro __using__(_options) do
     quote do
-      # todo: does this line do anything?
-      import unquote(__MODULE__)
+      import unquote(__MODULE__), only: [{:example, 2}]
 
       @behaviour ExExample.Behaviour
 
