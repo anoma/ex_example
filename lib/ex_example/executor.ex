@@ -113,6 +113,7 @@ defmodule ExExample.Executor do
     :ok
   end
 
+  # todo: could be prettier (cached or not for deps, graph-drawing)
   @spec pretty_run(atom()) :: :ok
   def pretty_run(module) do
     module
