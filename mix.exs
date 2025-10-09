@@ -13,7 +13,7 @@ defmodule ExExample.MixProject do
         plt_add_apps: [:ex_unit]
       ],
       # for docs
-      name: "ex_example",
+      name: "ExExample",
       source_url: "",
       homepage_url: "",
       docs: &docs/0
