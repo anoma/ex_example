@@ -35,9 +35,11 @@ defmodule ExExample.Cache do
   def get_result(%Key{} = key) do
     case Cachex.get(@cache_name, key) do
       {:ok, nil} ->
+        IO.puts("cache MISS")
         {:error, :no_result}
 
       {:ok, result} ->
+        IO.puts("cache HIT")
         {:ok, result}
     end
   end

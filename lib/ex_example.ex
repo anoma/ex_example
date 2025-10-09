@@ -139,7 +139,9 @@ defmodule ExExample do
     hidden_example_name = String.to_atom("__ex_example__#{example_name}__")
 
     arg_names =
-      if args do
+      if is_atom(args) do
+        []
+      else
         for arg <- args do
           try do
             {:\\, _, [var, _]} = arg
@@ -155,8 +157,6 @@ defmodule ExExample do
                 line: __CALLER__.line
           end
         end
-      else
-        []
       end
 
     quote do
