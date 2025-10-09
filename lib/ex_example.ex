@@ -138,18 +138,37 @@ defmodule ExExample do
     # __ex_example__example_name__
     hidden_example_name = String.to_atom("__ex_example__#{example_name}__")
 
+    arg_names =
+      if args do
+        for arg <- args do
+          try do
+            {:\\, _, [var, _]} = arg
+            var
+          rescue
+            _ in MatchError ->
+              # credo wants to reraise, but I'm raising a new exception.
+              # credo:disable-for-next-line
+              raise CompileError,
+                description:
+                  "examples with arguments must provide defaults with \\\\",
+                file: __CALLER__.file,
+                line: __CALLER__.line
+          end
+        end
+      else
+        []
+      end
+
     quote do
       def unquote({hidden_example_name, context, args}) do
         unquote(body)
       end
 
-      # TODO: examples with arguments!
-      # arg \\ default has its own AST node, so this isn't automatic.
       @examples {unquote(example_name), unquote(called_functions)}
       def unquote({example_name, context, args}) do
         case Executor.attempt_example(
                {__MODULE__, unquote(example_name)},
-               []
+               unquote(arg_names)
              ) do
           %{result: %Cache.Result{success: :success} = result} ->
             result.result

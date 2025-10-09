@@ -32,6 +32,12 @@ defmodule Examples.Stack do
     stack
   end
 
+  example push_value(v \\ "example value") do
+    stack = new_stack()
+    {:ok, stack} = Stack.push(stack, v)
+    stack
+  end
+
   @spec copy(any()) :: Stack.t()
   def copy(stack) do
     %Stack{elements: stack.elements}
