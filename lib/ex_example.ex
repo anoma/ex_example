@@ -81,17 +81,14 @@ defmodule ExExample do
   """
   @spec execution_order(atom()) :: [{atom(), atom()}]
   def execution_order(module) do
-    module.__examples__()
-    |> Enum.reduce(Graph.new(), fn
-      {function, []}, g ->
-        Graph.add_vertex(g, {__MODULE__, function})
+    Enum.reduce(module.__examples__(), Graph.new(), fn
+      {node_fn, clauses}, g ->
+        g = Graph.add_vertex(g, {module, node_fn})
 
-      {function, dependencies}, g ->
-        dependencies
-        # filter out all non-example dependencies
+        clauses
         |> Enum.filter(&example?/1)
-        |> Enum.reduce(g, fn {{module, func}, _arity}, g ->
-          Graph.add_edge(g, {module, func}, {module, function})
+        |> Enum.reduce(g, fn {{module, dep_fn}, _arity}, g ->
+          Graph.add_edge(g, {module, dep_fn}, {module, node_fn})
         end)
     end)
     |> Graph.topsort()
