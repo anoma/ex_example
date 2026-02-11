@@ -3,7 +3,7 @@
 `ExExample` is an examples framework for Elixir projects.
 
 As opposed to regular unit tests, examples are supposed to be executed from
-within the REPL. Examples return useful values, and can build upon one 
+within the REPL. Examples return useful values, and can build upon one
 another; they subsume all of "REPL helpers", "unit tests", and "test fixtures".
 
 Examples serve both as a unit test, but also as a tool to discover, learn, and
@@ -61,7 +61,7 @@ This is especially useful if you return values that are mutable (e.g., process
 ids).
 For example, if you want to create a copy of a supervision tree, you define the
 logic to clone that supervision tree in the `copy/1` function.
-This is useful if you have examples building on it that change that value, 
+This is useful if you have examples building on it that change that value,
 because other examples do not expect their inputs to have been modified.
 
 The `rerun?/1` function takes in the result of an already run example, and
@@ -83,36 +83,36 @@ For a more detailed view of all the examples in a module, use
 
 ```iex
 iex> ExExample.Executor.pretty_run(Examples.Stack)
-good (cached) Examples.Stack.new_stack   
-good (cached) Examples.Stack.push_value   
+good (cached) Examples.Stack.new_stack
+good (cached) Examples.Stack.push_value
 +   good Examples.Stack.new_stack
-good (cached) Examples.Stack.push_stack   
+good (cached) Examples.Stack.push_stack
 +   good Examples.Stack.new_stack
-good (cached) Examples.Stack.pop_stack   
+good (cached) Examples.Stack.pop_stack
 +   good Examples.Stack.push_stack
-good (cached) Examples.Stack.empty_stack_should_be_empty   
+good (cached) Examples.Stack.empty_stack_should_be_empty
 +   good Examples.Stack.new_stack
 :ok
 ```
 
-Examples may also be run as tests from `mix test` with the `ExUnit` 
+Examples may also be run as tests from `mix test` with the `ExUnit`
 integration; see **ExUnit Integration** below.
 
 ## Writing Examples
 
-We often use the `Examples` top-level module namespace for example modules, 
+We often use the `Examples` top-level module namespace for example modules,
 but you can name them anything you'd like.
 
-An example is more or less the same as a `def`. It exports a function with 
-the given name from the example module; i.e., the above `MyExamples` module 
+An example is more or less the same as a `def`. It exports a function with
+the given name from the example module; i.e., the above `MyExamples` module
 exports `MyExamples.read_data/0`.
 
-An example may have arguments, too. To support their use as tests, any 
+An example may have arguments, too. To support their use as tests, any
 arguments must provide default values with `\\`. That is,
 `example push_value(v \\ "example value")`, not `example push_value(v)`.
 
-Examples can and should build on one another (don't worry about expensively 
-rerunning them; see **Caching** below), because they return useful values. 
+Examples can and should build on one another (don't worry about expensively
+rerunning them; see **Caching** below), because they return useful values.
 The following shows how this might be done:
 
 ```elixir
@@ -120,17 +120,17 @@ defmodule MyExamples do
   example new_stack do
     []
   end
-  
+
   example push_one_to_empty do
     stack = new_stack()
     [1 | stack]
   end
-  
+
   example push_value_to_empty(v \\ "example value") do
     stack = new_stack()
     [v | stack]
   end
-  
+
   example push_one_two_to_empty do
     stack = push_one()
     [2 | stack]
@@ -138,29 +138,29 @@ defmodule MyExamples do
 end
 ```
 
-You may wish to make assertions about invariants in your examples. 
+You may wish to make assertions about invariants in your examples.
 `ExExample` doesn't provide assertions; it wouldn't add anything that
 `ExUnit.Assertions` doesn't already provide. Feel free to import
-`ExUnit.Assertions` and assert things; this provides helpful error messages 
+`ExUnit.Assertions` and assert things; this provides helpful error messages
 both in the REPL and in test runs.
 
 ## Copying
 
-As discussed above, it's assumed by default that values returned from 
-examples are ordinary terms - that is, immutable. Sometimes this isn't the 
-case; it could be that the value is or contains things like PIDs (if you're 
-returning a struct representing a whole supervision tree), references (maybe 
+As discussed above, it's assumed by default that values returned from
+examples are ordinary terms - that is, immutable. Sometimes this isn't the
+case; it could be that the value is or contains things like PIDs (if you're
+returning a struct representing a whole supervision tree), references (maybe
 ETS tables), or otherwise has different semantics.
 
-But when building examples on one another, the assumption is that the result 
-of e.g. "new_subsystem" is a fresh instance of the subsystem, not one that 
+But when building examples on one another, the assumption is that the result
+of e.g. "new_subsystem" is a fresh instance of the subsystem, not one that
 has had its state modified by later examples.
 
-If this is the case, you can define the `copy/1` callback. The standard 
-catchall behavior for ordinary terms is `def copy(item), do: item`, but you 
+If this is the case, you can define the `copy/1` callback. The standard
+catchall behavior for ordinary terms is `def copy(item), do: item`, but you
 can specify your own for anything an example might return.
 
-The `rerun?/1` callback serves a related function; you can have it return 
+The `rerun?/1` callback serves a related function; you can have it return
 `true` for any value that should always be recomputed, even if it's cached.
 
 ## Caching
