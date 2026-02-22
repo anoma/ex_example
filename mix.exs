@@ -11,15 +11,13 @@ defmodule ExExample.MixProject do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {ExExample, []},
-      extra_applications: [:logger, :observer, :wx]
+      extra_applications: [:logger],
+      mod: {ExExample.Application, []}
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:cachex, "~> 4.1.1"},
