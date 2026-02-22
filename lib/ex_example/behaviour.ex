@@ -7,6 +7,6 @@ defmodule ExExample.Behaviour do
   use macro for ExExample
   """
 
-  @callback rerun?(ExExample.CacheResult.t()) :: boolean()
-  @callback copy(ExExample.CacheResult.t()) :: any()
+  @callback rerun?(any()) :: boolean()
+  @callback copy(any()) :: any()
 end
