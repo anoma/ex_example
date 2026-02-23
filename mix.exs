@@ -7,7 +7,16 @@ defmodule ExExample.MixProject do
       version: "0.1.0",
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      dialyzer: [
+        plt_add_deps: :apps_direct,
+        plt_add_apps: [:ex_unit]
+      ],
+      # for docs
+      name: "ExExample",
+      source_url: "",
+      homepage_url: "",
+      docs: &docs/0
     ]
   end
 
@@ -27,6 +36,13 @@ defmodule ExExample.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.31", only: [:dev], runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      extras: ["README.md"]
     ]
   end
 end
