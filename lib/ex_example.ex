@@ -87,8 +87,8 @@ defmodule ExExample do
 
         clauses
         |> Enum.filter(&example?/1)
-        |> Enum.reduce(g, fn {{module, dep_fn}, _arity}, g ->
-          Graph.add_edge(g, {module, dep_fn}, {module, node_fn})
+        |> Enum.reduce(g, fn {{dep_mod, dep_fn}, _arity}, g ->
+          Graph.add_edge(g, {dep_mod, dep_fn}, {module, node_fn})
         end)
     end)
     |> Graph.topsort()
