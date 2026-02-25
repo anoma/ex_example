@@ -33,7 +33,7 @@ defmodule ExExample.MixProject do
     [
       {:cachex, "~> 4.1.1"},
       {:libgraph, "~> 0.16.0"},
-      {:typed_struct, "~> 0.3.0"},
+      {:typedstruct, "~> 0.5.0"},
       # non-runtime dependencies below
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
